@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -21,7 +22,8 @@ const NAV = [
   { href: "/debts", label: "Debts", icon: CreditCard },
   { href: "/income", label: "Income & Expenses", icon: DollarSign },
   { href: "/simulator", label: "Simulator", icon: TrendingDown },
-  { href: "/coach", label: "AI Coach", icon: Bot },
+  { href: "/coach", label: "Coach", icon: Bot },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Navbar({ userName }: { userName?: string | null }) {

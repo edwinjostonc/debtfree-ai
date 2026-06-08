@@ -9,6 +9,7 @@ const incomeSchema = z.object({
   name: z.string().min(1),
   amount: z.coerce.number().positive(),
   frequency: z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "QUARTERLY", "ANNUALLY"]),
+  currency: z.string().length(3).default("USD"),
   isActive: z.coerce.boolean().optional().default(true),
 });
 
@@ -30,6 +31,7 @@ const expenseSchema = z.object({
   ]),
   amount: z.coerce.number().positive(),
   frequency: z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "QUARTERLY", "ANNUALLY"]),
+  currency: z.string().length(3).default("USD"),
   isFixed: z.coerce.boolean().optional().default(true),
 });
 

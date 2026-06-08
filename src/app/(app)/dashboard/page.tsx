@@ -1,35 +1,44 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { computeMetrics, dtiRating, utilizationRating, formatCurrency, formatPercent } from "@/lib/financial/metrics";
+import { computeMetricsMultiCurrency, convertDebtsToBase } from "@/lib/financial/metrics-multi";
+import { dtiRating, utilizationRating, formatPercent } from "@/lib/financial/metrics";
 import { calculatePayoff } from "@/lib/financial/payoff";
-import { toMonthlyAmount } from "@/lib/financial/interest";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardCharts } from "@/components/dashboard/charts";
 import { DebtSummaryList } from "@/components/dashboard/debt-summary-list";
+import { formatMoney, getCurrencyInfo } from "@/lib/currency";
 import Link from "next/link";
-import { Bot, Plus, TrendingDown, AlertCircle } from "lucide-react";
+import { Bot, Plus, AlertCircle, Settings } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [debts, incomes, expenses] = await Promise.all([
+  const [user, debts, incomes, expenses] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { baseCurrency: true, name: true } }),
     prisma.debt.findMany({ where: { userId, isPaidOff: false }, orderBy: { balance: "desc" } }),
     prisma.income.findMany({ where: { userId, isActive: true } }),
     prisma.expense.findMany({ where: { userId } }),
   ]);
 
-  const metrics = computeMetrics(debts, incomes, expenses);
+  const baseCurrency = user?.baseCurrency ?? "USD";
+  const baseInfo = getCurrencyInfo(baseCurrency);
 
-  const debtInput = debts.map((d) => ({
-    id: d.id,
-    name: d.name,
-    type: d.type as "CREDIT_CARD" | "STUDENT_LOAN" | "MORTGAGE" | "CAR_LOAN" | "PERSONAL_LOAN" | "MEDICAL" | "OTHER",
-    balance: d.balance,
-    originalBalance: d.originalBalance,
-    interestRate: d.interestRate,
-    minimumPayment: d.minimumPayment,
-  }));
+  const metrics = await computeMetricsMultiCurrency(debts, incomes, expenses, baseCurrency);
+
+  const debtInput = await convertDebtsToBase(
+    debts.map((d) => ({
+      id: d.id,
+      name: d.name,
+      type: d.type,
+      balance: d.balance,
+      originalBalance: d.originalBalance,
+      interestRate: d.interestRate,
+      minimumPayment: d.minimumPayment,
+      currency: d.currency,
+    })),
+    baseCurrency
+  );
 
   const monthlyBudget = Math.max(
     metrics.monthlyIncome - metrics.monthlyExpenses,
@@ -43,179 +52,101 @@ export default async function DashboardPage() {
 
   const dtiInfo = dtiRating(metrics.debtToIncomeRatio);
   const utilInfo = utilizationRating(metrics.creditUtilization);
-
   const hasNoData = debts.length === 0 && incomes.length === 0;
+
+  const fmt = (v: number) => formatMoney(v, baseCurrency);
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Dashboard
-          </h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Your debt freedom progress at a glance
+            Totals shown in <span className="font-medium">{baseInfo.code} ({baseInfo.symbol})</span>
+            {" · "}
+            <Link href="/settings" className="text-emerald-600 hover:text-emerald-700">Change currency</Link>
           </p>
         </div>
-        <Link
-          href="/debts"
-          className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
-        >
-          <Plus size={16} />
-          Add Debt
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/settings" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+            <Settings size={16} />
+          </Link>
+          <Link href="/debts" className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors">
+            <Plus size={16} />
+            Add Debt
+          </Link>
+        </div>
       </div>
 
-      {/* Onboarding prompt */}
       {hasNoData && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950/30">
           <div className="flex items-start gap-4">
             <AlertCircle className="mt-0.5 shrink-0 text-emerald-600" size={20} />
             <div>
-              <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">
-                Let&apos;s get your plan started
-              </h3>
+              <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">Let&apos;s build your plan</h3>
               <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
-                Add your debts and income to see your personalized debt-free date and payoff strategy.
+                Add your debts (any currency) and income to see your personalized payoff plan.
               </p>
               <div className="mt-4 flex gap-3">
-                <Link
-                  href="/debts"
-                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-                >
-                  Add First Debt
-                </Link>
-                <Link
-                  href="/income"
-                  className="rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
-                >
-                  Add Income
-                </Link>
+                <Link href="/debts" className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Add First Debt</Link>
+                <Link href="/income" className="rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50">Add Income</Link>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Key Metrics */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          label="Total Debt"
-          value={formatCurrency(metrics.totalDebt)}
-          sub={`${debts.length} active debt${debts.length !== 1 ? "s" : ""}`}
-          color="red"
-        />
-        <MetricCard
-          label="Monthly Income"
-          value={formatCurrency(metrics.monthlyIncome)}
-          sub="from all sources"
-          color="green"
-        />
-        <MetricCard
-          label="Debt-to-Income"
-          value={formatPercent(metrics.debtToIncomeRatio)}
-          sub={dtiInfo.label}
-          color={dtiInfo.color as "green" | "blue" | "yellow" | "orange" | "red"}
-        />
+        <MetricCard label="Total Debt" value={fmt(metrics.totalDebt)} sub={`${debts.length} debt${debts.length !== 1 ? "s" : ""}`} color="red" />
+        <MetricCard label="Monthly Income" value={fmt(metrics.monthlyIncome)} sub="all sources" color="green" />
+        <MetricCard label="Debt-to-Income" value={formatPercent(metrics.debtToIncomeRatio)} sub={dtiInfo.label} color={dtiInfo.color as "green" | "blue" | "yellow" | "orange" | "red"} />
         {payoffResult ? (
-          <MetricCard
-            label="Debt-Free Date"
-            value={payoffResult.debtFreeDate.toLocaleDateString("en-US", {
-              month: "short",
-              year: "numeric",
-            })}
-            sub={`${payoffResult.totalMonths} months away`}
-            color="emerald"
-          />
+          <MetricCard label="Debt-Free Date" value={payoffResult.debtFreeDate.toLocaleDateString("en-US", { month: "short", year: "numeric" })} sub={`${payoffResult.totalMonths} months`} color="emerald" />
         ) : (
-          <MetricCard
-            label="Extra/Month"
-            value={formatCurrency(metrics.availableForDebt)}
-            sub="available for debt"
-            color="blue"
-          />
+          <MetricCard label="Available/Month" value={fmt(metrics.availableForDebt)} sub="for extra payments" color="blue" />
         )}
       </div>
 
-      {/* Charts + payoff insight */}
       {debtInput.length > 0 && payoffResult && (
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <DashboardCharts
-              monthlySummary={payoffResult.monthlySummary.slice(0, 60)}
-              debts={debtInput}
-            />
+            <DashboardCharts monthlySummary={payoffResult.monthlySummary.slice(0, 60)} debts={debtInput} />
           </div>
           <div className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Payoff Summary</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Payoff Summary</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 <SummaryRow label="Strategy" value="Avalanche" />
-                <SummaryRow
-                  label="Total Interest"
-                  value={formatCurrency(payoffResult.totalInterestPaid)}
-                />
-                <SummaryRow
-                  label="Total Paid"
-                  value={formatCurrency(payoffResult.totalPaid)}
-                />
-                <SummaryRow
-                  label="Months Remaining"
-                  value={payoffResult.totalMonths.toString()}
-                />
+                <SummaryRow label="Total Interest" value={fmt(payoffResult.totalInterestPaid)} />
+                <SummaryRow label="Total Paid" value={fmt(payoffResult.totalPaid)} />
+                <SummaryRow label="Months Left" value={payoffResult.totalMonths.toString()} />
                 {metrics.creditUtilization > 0 && (
-                  <SummaryRow
-                    label="Credit Utilization"
-                    value={`${formatPercent(metrics.creditUtilization)} (${utilInfo.label})`}
-                  />
+                  <SummaryRow label="Credit Utilization" value={`${formatPercent(metrics.creditUtilization)} (${utilInfo.label})`} />
                 )}
+                <div className="pt-1 text-xs text-slate-400">
+                  All values in {baseCurrency}. Conversion rates from frankfurter.app.
+                </div>
               </CardContent>
             </Card>
-
-            <Link
-              href="/coach"
-              className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 hover:bg-emerald-100 transition-colors dark:border-emerald-900 dark:bg-emerald-950/30"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
-                <Bot size={20} />
-              </div>
+            <Link href="/coach" className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 hover:bg-emerald-100 transition-colors dark:border-emerald-900 dark:bg-emerald-950/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white"><Bot size={20} /></div>
               <div>
-                <p className="font-semibold text-emerald-900 dark:text-emerald-100 text-sm">
-                  Ask Your AI Coach
-                </p>
-                <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                  Get personalized debt advice
-                </p>
+                <p className="font-semibold text-emerald-900 dark:text-emerald-100 text-sm">Ask Your Coach</p>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300">Personalized debt advice</p>
               </div>
             </Link>
           </div>
         </div>
       )}
 
-      {/* Debt list */}
       {debts.length > 0 && (
-        <DebtSummaryList
-          debts={debts}
-          plans={payoffResult?.plans ?? []}
-        />
+        <DebtSummaryList debts={debts} plans={payoffResult?.plans ?? []} baseCurrency={baseCurrency} />
       )}
     </div>
   );
 }
 
-function MetricCard({
-  label,
-  value,
-  sub,
-  color,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  color: string;
-}) {
+function MetricCard({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
   const colorMap: Record<string, string> = {
     red: "text-red-600 dark:text-red-400",
     green: "text-emerald-600 dark:text-emerald-400",
@@ -224,14 +155,11 @@ function MetricCard({
     yellow: "text-yellow-600 dark:text-yellow-400",
     orange: "text-orange-600 dark:text-orange-400",
   };
-
   return (
     <Card>
       <CardContent className="pt-6">
         <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-        <p className={`mt-1 text-2xl font-bold ${colorMap[color] ?? "text-slate-900"}`}>
-          {value}
-        </p>
+        <p className={`mt-1 text-2xl font-bold ${colorMap[color] ?? "text-slate-900"}`}>{value}</p>
         <p className="mt-0.5 text-xs text-slate-500">{sub}</p>
       </CardContent>
     </Card>

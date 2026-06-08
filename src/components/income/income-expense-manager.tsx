@@ -12,7 +12,9 @@ import type { FinancialMetrics } from "@/lib/financial/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { CurrencySelect } from "@/components/ui/currency-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatMoney } from "@/lib/currency";
 import {
   Plus,
   Trash2,
@@ -32,6 +34,7 @@ interface Income {
   name: string;
   amount: number;
   frequency: string;
+  currency: string;
   isActive: boolean;
   createdAt: Date;
 }
@@ -42,6 +45,7 @@ interface Expense {
   category: string;
   amount: number;
   frequency: string;
+  currency: string;
   isFixed: boolean;
   createdAt: Date;
 }
@@ -50,6 +54,7 @@ interface IncomeExpenseManagerProps {
   initialIncomes: Income[];
   initialExpenses: Expense[];
   metrics: FinancialMetrics;
+  baseCurrency: string;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -173,7 +178,7 @@ function AddIncomeForm({ onClose }: { onClose: () => void }) {
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Amount ($)"
+              label="Amount"
               id="inc-amount"
               name="amount"
               type="number"
@@ -182,12 +187,13 @@ function AddIncomeForm({ onClose }: { onClose: () => void }) {
               placeholder="3500"
               required
             />
-            <Select label="Frequency" id="inc-frequency" name="frequency" required>
-              {Object.entries(FREQUENCY_LABELS).map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
-              ))}
-            </Select>
+            <CurrencySelect label="Currency" name="currency" />
           </div>
+          <Select label="Frequency" id="inc-frequency" name="frequency" required>
+            {Object.entries(FREQUENCY_LABELS).map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </Select>
 
           <div className="flex gap-3">
             <Button type="button" variant="secondary" className="flex-1" onClick={onClose}>Cancel</Button>
@@ -253,16 +259,19 @@ function AddExpenseForm({ onClose }: { onClose: () => void }) {
             </Select>
           </div>
 
-          <Input
-            label="Amount ($)"
-            id="exp-amount"
-            name="amount"
-            type="number"
-            min="0.01"
-            step="0.01"
-            placeholder="1200"
-            required
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Amount"
+              id="exp-amount"
+              name="amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="1200"
+              required
+            />
+            <CurrencySelect label="Currency" name="currency" />
+          </div>
 
           <label className="flex items-center gap-2.5 cursor-pointer">
             <input
@@ -381,6 +390,7 @@ export function IncomeExpenseManager({
   initialIncomes,
   initialExpenses,
   metrics,
+  baseCurrency,
 }: IncomeExpenseManagerProps) {
   const [activeTab, setActiveTab] = useState<"income" | "expenses">("income");
   const [showAddIncome, setShowAddIncome] = useState(false);

@@ -31,6 +31,7 @@ interface SimulatorClientProps {
   debts: Debt[];
   monthlyBudget: number;
   metrics: FinancialMetrics;
+  baseCurrency?: string;
 }
 
 interface ScenarioInputs {

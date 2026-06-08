@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition, useActionState } from "react";
 import {
@@ -8,6 +8,7 @@ import {
   recordPayment,
 } from "@/app/actions/debts";
 import { Button } from "@/components/ui/button";
+import { CurrencySelect } from "@/components/ui/currency-select";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +23,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Payment {
   id: string;
@@ -54,7 +55,7 @@ interface DebtManagerProps {
   initialDebts: PrismaDebt[];
 }
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DEBT_TYPE_LABELS: Record<string, string> = {
   CREDIT_CARD: "Credit Card",
@@ -80,7 +81,7 @@ function fmt(n: number) {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 }
 
-// ── Add Debt Form ──────────────────────────────────────────────────────────────
+// â”€â”€ Add Debt Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function AddDebtModal({ onClose }: { onClose: () => void }) {
   const [isPending, startTransition] = useTransition();
@@ -133,15 +134,18 @@ function AddDebtModal({ onClose }: { onClose: () => void }) {
 
           <Input label="Debt Name" id="name" name="name" placeholder="Chase Sapphire Card" required />
 
-          <Select label="Debt Type" id="type" name="type" required>
+          <div className="grid grid-cols-2 gap-4">
+            <Select label="Debt Type" id="type" name="type" required>
             {Object.entries(DEBT_TYPE_LABELS).map(([value, label]) => (
               <option key={value} value={value}>{label}</option>
             ))}
-          </Select>
+            </Select>
+            <CurrencySelect label="Currency" name="currency" />
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Current Balance ($)"
+              label="Current Balance"
               id="balance"
               name="balance"
               type="number"
@@ -151,7 +155,7 @@ function AddDebtModal({ onClose }: { onClose: () => void }) {
               required
             />
             <Input
-              label="Original Balance ($)"
+              label="Original Balance"
               id="originalBalance"
               name="originalBalance"
               type="number"
@@ -175,7 +179,7 @@ function AddDebtModal({ onClose }: { onClose: () => void }) {
               required
             />
             <Input
-              label="Minimum Payment ($)"
+              label="Minimum Payment"
               id="minimumPayment"
               name="minimumPayment"
               type="number"
@@ -220,7 +224,7 @@ function AddDebtModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── Payment Modal ──────────────────────────────────────────────────────────────
+// â”€â”€ Payment Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PaymentModal({
   debt,
@@ -324,7 +328,7 @@ function PaymentModal({
   );
 }
 
-// ── Debt Card ──────────────────────────────────────────────────────────────────
+// â”€â”€ Debt Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function DebtCard({
   debt,
@@ -463,7 +467,7 @@ function DebtCard({
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────────────────────
+// â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function DebtManager({ initialDebts }: DebtManagerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -572,7 +576,7 @@ export function DebtManager({ initialDebts }: DebtManagerProps) {
           <p className="mt-1 text-sm text-slate-500">
             {activeTab === "active"
               ? "Click \"Add Debt\" to start tracking your debts."
-              : "Keep paying — paid off debts will appear here."}
+              : "Keep paying â€” paid off debts will appear here."}
           </p>
         </div>
       ) : (
@@ -598,3 +602,4 @@ export function DebtManager({ initialDebts }: DebtManagerProps) {
     </>
   );
 }
+

@@ -19,6 +19,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  baseCurrency  String    @default("USD")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -77,6 +78,7 @@ model Debt {
   originalBalance Float
   interestRate    Float
   minimumPayment  Float
+  currency        String    @default("USD")
   dueDate         Int?
   lender          String?
   accountNumber   String?
@@ -98,6 +100,7 @@ model Income {
   name      String
   amount    Float
   frequency String
+  currency  String   @default("USD")
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,6 +117,7 @@ model Expense {
   category  String
   amount    Float
   frequency String
+  currency  String   @default("USD")
   isFixed   Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
