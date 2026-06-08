@@ -7,34 +7,26 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, id, ...props }, ref) => {
-    return (
-      <div className="space-y-1.5">
-        {label && (
-          <label
-            htmlFor={id}
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-          >
-            {label}
-          </label>
+  ({ className, label, error, id, ...props }, ref) => (
+    <div className="space-y-1.5">
+      {label && (
+        <label htmlFor={id} className="block text-[11px] font-bold uppercase tracking-[0.15em] text-[#5a5a7a]">
+          {label}
+        </label>
+      )}
+      <input
+        ref={ref} id={id}
+        className={cn(
+          "w-full rounded-xl border border-[#1a1a2e] bg-[#11111f] px-4 py-2.5 text-sm text-white placeholder:text-[#2a2a45] outline-none transition-all",
+          "focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20",
+          "disabled:opacity-40 disabled:cursor-not-allowed",
+          error && "border-rose-500/30 focus:border-rose-500/50 focus:ring-rose-500/20",
+          className
         )}
-        <input
-          ref={ref}
-          id={id}
-          className={cn(
-            "w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors",
-            "focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20",
-            "dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            error && "border-red-400 focus:border-red-400 focus:ring-red-400/20",
-            className
-          )}
-          {...props}
-        />
-        {error && <p className="text-xs text-red-500">{error}</p>}
-      </div>
-    );
-  }
+        {...props}
+      />
+      {error && <p className="text-xs text-rose-400">{error}</p>}
+    </div>
+  )
 );
-
 Input.displayName = "Input";

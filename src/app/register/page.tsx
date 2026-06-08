@@ -7,74 +7,38 @@ import { TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { useActionState } from "react";
 
-const INITIAL: ActionState = {};
-
 export default function RegisterPage() {
-  const [state, action, pending] = useActionState(registerUser, INITIAL);
+  const [state, action, pending] = useActionState(registerUser, {} as ActionState);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-[#07070d] px-4">
+      <div className="dot-grid pointer-events-none fixed inset-0 opacity-100" />
+      <div className="glow-blob w-96 h-96 bg-cyan-700 opacity-[0.07] fixed top-1/4 left-1/2 -translate-x-1/2" />
+
+      <div className="relative w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white">
-              <TrendingDown size={24} />
+          <div className="mb-5 flex justify-center">
+            <div className="h-11 w-11 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#7c3aed,#06b6d4)" }}>
+              <TrendingDown size={20} className="text-white" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create your account</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Free forever. No credit card required.
-          </p>
+          <h1 className="text-xl font-black tracking-tight">Create your account</h1>
+          <p className="mt-1 text-[13px] text-[#5a5a7a]">Free forever · No credit card</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-[#1a1a2e] bg-[#0c0c16] p-7">
           <form action={action} className="space-y-4">
             {state.error && (
-              <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
-                {state.error}
-              </div>
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-400">{state.error}</div>
             )}
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              label="Full Name"
-              placeholder="Alex Johnson"
-              required
-              autoComplete="name"
-            />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              label="Email"
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-            />
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              label="Password"
-              placeholder="At least 8 characters"
-              required
-              minLength={8}
-              autoComplete="new-password"
-            />
-            <Button type="submit" className="w-full" size="lg" loading={pending}>
-              Create Free Account
-            </Button>
+            <Input id="name" name="name" type="text" label="Full Name" placeholder="Alex Johnson" required autoComplete="name" />
+            <Input id="email" name="email" type="email" label="Email" placeholder="you@example.com" required autoComplete="email" />
+            <Input id="password" name="password" type="password" label="Password" placeholder="At least 8 characters" required minLength={8} autoComplete="new-password" />
+            <Button type="submit" className="w-full mt-1" size="lg" loading={pending}>Create free account</Button>
           </form>
-
-          <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-emerald-600 hover:text-emerald-700"
-            >
-              Sign in
-            </Link>
+          <p className="mt-6 text-center text-[13px] text-[#5a5a7a]">
+            Have an account?{" "}
+            <Link href="/login" className="font-semibold text-violet-400 hover:text-violet-300 transition-colors">Sign in</Link>
           </p>
         </div>
       </div>

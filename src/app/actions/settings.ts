@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -47,3 +47,4 @@ export async function getUserSettings() {
     select: { baseCurrency: true, name: true, email: true },
   });
 }
+

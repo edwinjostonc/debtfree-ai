@@ -1,14 +1,14 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computeMetricsMultiCurrency, convertDebtsToBase } from "@/lib/financial/metrics-multi";
-import { dtiRating, utilizationRating, formatPercent } from "@/lib/financial/metrics";
+import { dtiRating, formatPercent } from "@/lib/financial/metrics";
 import { calculatePayoff } from "@/lib/financial/payoff";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardCharts } from "@/components/dashboard/charts";
 import { DebtSummaryList } from "@/components/dashboard/debt-summary-list";
 import { formatMoney, getCurrencyInfo } from "@/lib/currency";
 import Link from "next/link";
-import { Bot, Plus, AlertCircle, Settings } from "lucide-react";
+import { Bot, Plus, AlertCircle, Zap } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -23,154 +23,129 @@ export default async function DashboardPage() {
 
   const baseCurrency = user?.baseCurrency ?? "USD";
   const baseInfo = getCurrencyInfo(baseCurrency);
-
   const metrics = await computeMetricsMultiCurrency(debts, incomes, expenses, baseCurrency);
 
   const debtInput = await convertDebtsToBase(
-    debts.map((d) => ({
-      id: d.id,
-      name: d.name,
-      type: d.type,
-      balance: d.balance,
-      originalBalance: d.originalBalance,
-      interestRate: d.interestRate,
-      minimumPayment: d.minimumPayment,
-      currency: d.currency,
-    })),
+    debts.map((d) => ({ id: d.id, name: d.name, type: d.type, balance: d.balance, originalBalance: d.originalBalance, interestRate: d.interestRate, minimumPayment: d.minimumPayment, currency: d.currency })),
     baseCurrency
   );
 
-  const monthlyBudget = Math.max(
-    metrics.monthlyIncome - metrics.monthlyExpenses,
-    metrics.totalMinimumPayments
-  );
-
-  const payoffResult =
-    debtInput.length > 0
-      ? calculatePayoff(debtInput, monthlyBudget, "AVALANCHE")
-      : null;
-
+  const monthlyBudget = Math.max(metrics.monthlyIncome - metrics.monthlyExpenses, metrics.totalMinimumPayments);
+  const payoff = debtInput.length > 0 ? calculatePayoff(debtInput, monthlyBudget, "AVALANCHE") : null;
   const dtiInfo = dtiRating(metrics.debtToIncomeRatio);
-  const utilInfo = utilizationRating(metrics.creditUtilization);
-  const hasNoData = debts.length === 0 && incomes.length === 0;
-
   const fmt = (v: number) => formatMoney(v, baseCurrency);
 
+  const hasNoData = debts.length === 0 && incomes.length === 0;
+
+  const DTI_COLORS: Record<string, string> = {
+    green: "text-emerald-400", blue: "text-cyan-400",
+    yellow: "text-amber-400", orange: "text-orange-400", red: "text-rose-400"
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Totals shown in <span className="font-medium">{baseInfo.code} ({baseInfo.symbol})</span>
-            {" · "}
-            <Link href="/settings" className="text-emerald-600 hover:text-emerald-700">Change currency</Link>
+          <h1 className="text-xl font-black tracking-tight">Dashboard</h1>
+          <p className="mt-0.5 text-[13px] text-[#5a5a7a]">
+            Totals in {baseInfo.code} · <Link href="/settings" className="text-violet-400 hover:text-violet-300 transition-colors">Change</Link>
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/settings" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-            <Settings size={16} />
-          </Link>
-          <Link href="/debts" className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors">
-            <Plus size={16} />
-            Add Debt
-          </Link>
-        </div>
+        <Link href="/debts" className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white" style={{ background: "linear-gradient(135deg,#7c3aed,#06b6d4)" }}>
+          <Plus size={15} />Add Debt
+        </Link>
       </div>
 
+      {/* Onboarding */}
       {hasNoData && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950/30">
+        <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-6">
           <div className="flex items-start gap-4">
-            <AlertCircle className="mt-0.5 shrink-0 text-emerald-600" size={20} />
+            <AlertCircle className="mt-0.5 shrink-0 text-violet-400" size={18} />
             <div>
-              <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">Let&apos;s build your plan</h3>
-              <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
-                Add your debts (any currency) and income to see your personalized payoff plan.
-              </p>
+              <h3 className="font-bold text-sm text-white">Start by adding your debts</h3>
+              <p className="mt-1 text-[13px] text-[#5a5a7a]">Add your debts and income to see your personalized debt-free date.</p>
               <div className="mt-4 flex gap-3">
-                <Link href="/debts" className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Add First Debt</Link>
-                <Link href="/income" className="rounded-lg border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50">Add Income</Link>
+                <Link href="/debts" className="rounded-lg px-4 py-2 text-xs font-bold text-white" style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>Add First Debt</Link>
+                <Link href="/income" className="rounded-lg border border-[#1a1a2e] px-4 py-2 text-xs font-medium text-[#5a5a7a] hover:text-white transition-colors">Add Income</Link>
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* Metrics */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="Total Debt" value={fmt(metrics.totalDebt)} sub={`${debts.length} debt${debts.length !== 1 ? "s" : ""}`} color="red" />
-        <MetricCard label="Monthly Income" value={fmt(metrics.monthlyIncome)} sub="all sources" color="green" />
-        <MetricCard label="Debt-to-Income" value={formatPercent(metrics.debtToIncomeRatio)} sub={dtiInfo.label} color={dtiInfo.color as "green" | "blue" | "yellow" | "orange" | "red"} />
-        {payoffResult ? (
-          <MetricCard label="Debt-Free Date" value={payoffResult.debtFreeDate.toLocaleDateString("en-US", { month: "short", year: "numeric" })} sub={`${payoffResult.totalMonths} months`} color="emerald" />
-        ) : (
-          <MetricCard label="Available/Month" value={fmt(metrics.availableForDebt)} sub="for extra payments" color="blue" />
-        )}
+        {[
+          { label: "Total Debt", value: fmt(metrics.totalDebt), sub: `${debts.length} debt${debts.length !== 1 ? "s" : ""}`, color: "text-rose-400" },
+          { label: "Monthly Income", value: fmt(metrics.monthlyIncome), sub: "all sources", color: "text-emerald-400" },
+          { label: "Debt-to-Income", value: formatPercent(metrics.debtToIncomeRatio), sub: dtiInfo.label, color: DTI_COLORS[dtiInfo.color] ?? "text-white" },
+          payoff
+            ? { label: "Debt-Free Date", value: payoff.debtFreeDate.toLocaleDateString("en-US", { month: "short", year: "numeric" }), sub: `${payoff.totalMonths} months`, color: "text-violet-400" }
+            : { label: "Available / Mo", value: fmt(metrics.availableForDebt), sub: "for extra payments", color: "text-cyan-400" },
+        ].map((m) => (
+          <Card key={m.label}>
+            <CardContent className="pt-5">
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#5a5a7a]">{m.label}</p>
+              <p className={`num mt-2 text-2xl font-black ${m.color}`}>{m.value}</p>
+              <p className="mt-0.5 text-[11px] text-[#2a2a45]">{m.sub}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {debtInput.length > 0 && payoffResult && (
-        <div className="grid gap-6 lg:grid-cols-3">
+      {/* Charts + summary */}
+      {debtInput.length > 0 && payoff && (
+        <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <DashboardCharts monthlySummary={payoffResult.monthlySummary.slice(0, 60)} debts={debtInput} />
+            <DashboardCharts monthlySummary={payoff.monthlySummary.slice(0, 60)} debts={debtInput} />
           </div>
           <div className="space-y-4">
             <Card>
               <CardHeader><CardTitle>Payoff Summary</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <SummaryRow label="Strategy" value="Avalanche" />
-                <SummaryRow label="Total Interest" value={fmt(payoffResult.totalInterestPaid)} />
-                <SummaryRow label="Total Paid" value={fmt(payoffResult.totalPaid)} />
-                <SummaryRow label="Months Left" value={payoffResult.totalMonths.toString()} />
-                {metrics.creditUtilization > 0 && (
-                  <SummaryRow label="Credit Utilization" value={`${formatPercent(metrics.creditUtilization)} (${utilInfo.label})`} />
-                )}
-                <div className="pt-1 text-xs text-slate-400">
-                  All values in {baseCurrency}. Conversion rates from frankfurter.app.
-                </div>
+              <CardContent className="space-y-3 pt-4">
+                {[
+                  { k: "Strategy", v: "Avalanche" },
+                  { k: "Total Interest", v: fmt(payoff.totalInterestPaid) },
+                  { k: "Total Paid", v: fmt(payoff.totalPaid) },
+                  { k: "Months Left", v: String(payoff.totalMonths) },
+                ].map(({ k, v }) => (
+                  <div key={k} className="flex justify-between text-sm">
+                    <span className="text-[#5a5a7a]">{k}</span>
+                    <span className="font-bold text-white">{v}</span>
+                  </div>
+                ))}
+                <div className="pt-1 text-[11px] text-[#2a2a45]">Rates via frankfurter.app</div>
               </CardContent>
             </Card>
-            <Link href="/coach" className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 hover:bg-emerald-100 transition-colors dark:border-emerald-900 dark:bg-emerald-950/30">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white"><Bot size={20} /></div>
+
+            <Link href="/simulator" className="flex items-center gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4 hover:border-violet-500/40 transition-all">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
+                <Zap size={16} className="text-white" />
+              </div>
               <div>
-                <p className="font-semibold text-emerald-900 dark:text-emerald-100 text-sm">Ask Your Coach</p>
-                <p className="text-xs text-emerald-700 dark:text-emerald-300">Personalized debt advice</p>
+                <p className="text-sm font-bold text-white">Run a Simulation</p>
+                <p className="text-[12px] text-[#5a5a7a]">What if you paid $100 extra?</p>
+              </div>
+            </Link>
+
+            <Link href="/coach" className="flex items-center gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 hover:border-cyan-500/40 transition-all">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: "linear-gradient(135deg,#06b6d4,#2dd4bf)" }}>
+                <Bot size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Ask Your Coach</p>
+                <p className="text-[12px] text-[#5a5a7a]">Personalized debt advice</p>
               </div>
             </Link>
           </div>
         </div>
       )}
 
+      {/* Debt list */}
       {debts.length > 0 && (
-        <DebtSummaryList debts={debts} plans={payoffResult?.plans ?? []} baseCurrency={baseCurrency} />
+        <DebtSummaryList debts={debts} plans={payoff?.plans ?? []} baseCurrency={baseCurrency} />
       )}
-    </div>
-  );
-}
-
-function MetricCard({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
-  const colorMap: Record<string, string> = {
-    red: "text-red-600 dark:text-red-400",
-    green: "text-emerald-600 dark:text-emerald-400",
-    emerald: "text-emerald-600 dark:text-emerald-400",
-    blue: "text-blue-600 dark:text-blue-400",
-    yellow: "text-yellow-600 dark:text-yellow-400",
-    orange: "text-orange-600 dark:text-orange-400",
-  };
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
-        <p className={`mt-1 text-2xl font-bold ${colorMap[color] ?? "text-slate-900"}`}>{value}</p>
-        <p className="mt-0.5 text-xs text-slate-500">{sub}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-slate-500">{label}</span>
-      <span className="font-medium text-slate-900 dark:text-slate-100">{value}</span>
     </div>
   );
 }
