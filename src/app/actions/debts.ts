@@ -20,7 +20,7 @@ const debtSchema = z.object({
   originalBalance: z.coerce.number().positive("Original balance must be positive"),
   interestRate: z.coerce.number().min(0).max(200),
   minimumPayment: z.coerce.number().min(0),
-  currency: z.string().min(2).max(4).default("USD"),
+  currency: z.string().length(3).default("USD"),
   dueDate: z.coerce.number().int().min(1).max(31).optional(),
   lender: z.string().optional(),
   accountNumber: z.string().optional(),
@@ -131,5 +131,4 @@ export async function getDebts() {
     orderBy: { createdAt: "asc" },
   });
 }
-
 
