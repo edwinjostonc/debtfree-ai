@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DebtFree AI
 
-## Getting Started
+AI-powered debt management platform. Track debts, simulate payoff strategies, and get personalized coaching from an AI that knows your real financial situation.
 
-First, run the development server:
+## Features
+
+- **Debt Tracker** — Add all debts with balances, interest rates, and payment history
+- **Income & Expense Manager** — Track cash flow to maximize debt payments  
+- **Payoff Engine** — Snowball, avalanche, and hybrid strategies with precise math
+- **What-If Simulator** — See how extra payments, income changes, or lump sums affect your debt-free date
+- **AI Coach** — Claude-powered coach that reads your actual finances, gives personalized advice
+- **Progress Dashboard** — Charts showing debt payoff trajectory and key metrics
+
+## Stack
+
+- **Next.js 16** (App Router) + TypeScript
+- **Prisma 7** + SQLite (dev) / PostgreSQL (prod)
+- **NextAuth v5** — email/password auth with JWT sessions
+- **Anthropic Claude claude-sonnet-4-6** — AI coaching only (never financial math)
+- **Tailwind CSS v4** + custom UI components
+- **Recharts** — data visualization
+
+## Quick Start
+
+### 1. Install
+
+```bash
+cd debtfree-ai
+npm install
+```
+
+### 2. Environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+```
+DATABASE_URL="file:./dev.db"
+NEXTAUTH_SECRET="run: openssl rand -base64 32"
+NEXTAUTH_URL="http://localhost:3000"
+ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+Get an Anthropic API key at [console.anthropic.com](https://console.anthropic.com)
+
+### 3. Database
+
+```bash
+npm run db:migrate
+```
+
+### 4. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) → Create an account → Add your debts.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Testing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test              # 28 unit tests (financial engine)
+npm run test:coverage # With coverage
+```
 
-## Learn More
+Test coverage: interest calculations, snowball/avalanche/hybrid strategies, simulator, DTI metrics, edge cases.
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Financial calculations are **always code** — never AI. The AI coach only explains, coaches, and recommends. It never generates numbers.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+User Input
+    ↓
+Server Actions (session verified)
+    ↓
+Financial Engine (pure TypeScript math)
+    ↓
+Database (Prisma + SQLite/PostgreSQL)
+    ↓
+AI Context Builder (injects real user data)
+    ↓
+Claude claude-sonnet-4-6 (coaching only)
+    ↓
+Streaming response → UI
+```
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Vercel (recommended)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push to GitHub
+2. Import to [vercel.com](https://vercel.com)
+3. Set environment variables (use PostgreSQL `DATABASE_URL` from Neon or Supabase)
+4. Deploy
+
+### PostgreSQL for production
+
+Replace `DATABASE_URL` with a PostgreSQL connection string:
+```
+DATABASE_URL="postgresql://user:password@host:5432/debtfree"
+```
+
+Then swap the adapter in `src/lib/prisma.ts` to `@prisma/adapter-pg`.
+
+## Security
+
+- Passwords: bcrypt (12 rounds)
+- Sessions: JWT, httpOnly cookies
+- Auth check on every Server Action
+- Users only see their own data (userId filter on all queries)
+- Prisma parameterized queries (SQL injection safe)
+- Zod validation on all inputs
+- API keys server-side only
+
+## Financial Accuracy
+
+All math uses standard formulas:
+- Monthly interest: `balance × (APR / 100 / 12)`
+- Amortization: `P × r(1+r)^n / ((1+r)^n - 1)`
+- DTI: `total minimum payments ÷ gross monthly income`
+- Payoff projection: month-by-month amortization with snowball payment rolling
+
+> **Disclaimer**: DebtFree AI is a planning tool, not licensed financial advice. Consult a certified financial planner for professional guidance.
