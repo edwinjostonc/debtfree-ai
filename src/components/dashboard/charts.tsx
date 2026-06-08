@@ -19,8 +19,10 @@ interface Props {
   debts: { id: string; name: string; balance: number }[];
 }
 
-const fmt = (v: number) =>
+const fmt = (v: number): string =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
+
+const tooltipFormatter = (value: unknown) => [fmt(Number(value))] as [string];
 
 export function DashboardCharts({ monthlySummary }: Props) {
   const chartData = monthlySummary.map((m) => ({
@@ -45,18 +47,18 @@ export function DashboardCharts({ monthlySummary }: Props) {
             <AreaChart data={displayData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#0f766e" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} width={52} />
-              <Tooltip formatter={(v) => fmt(Number(v))} />
+              <Tooltip formatter={tooltipFormatter} />
               <Area
                 type="monotone"
                 dataKey="balance"
                 name="Balance"
-                stroke="#10b981"
+                stroke="#0f766e"
                 fill="url(#balGrad)"
                 strokeWidth={2}
               />
@@ -74,10 +76,10 @@ export function DashboardCharts({ monthlySummary }: Props) {
             <BarChart data={displayData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} width={52} />
-              <Tooltip formatter={(v) => fmt(Number(v))} />
+              <Tooltip formatter={tooltipFormatter} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="principal" name="Principal" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="interest" name="Interest" stackId="a" fill="#f87171" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="principal" name="Principal" stackId="a" fill="#0f766e" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="interest" name="Interest" stackId="a" fill="#dc2626" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

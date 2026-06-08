@@ -48,22 +48,28 @@ export default async function DashboardPage() {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Hey, {firstName} 👋
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            {firstName}&apos;s Dashboard
           </h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Totals in <span className="font-medium text-slate-700 dark:text-slate-300">{baseInfo.code} ({baseInfo.symbol})</span>
-            <span className="mx-1.5 text-slate-300 dark:text-slate-600">·</span>
-            <Link href="/settings" className="text-emerald-600 hover:text-emerald-500 transition-colors">
+          <p className="mt-1 text-sm text-slate-500">
+            Totals in <span className="font-medium text-slate-700">{baseInfo.code} ({baseInfo.symbol})</span>
+            <span className="mx-1.5 text-slate-300">·</span>
+            <Link href="/settings" className="text-teal-700 hover:text-teal-800 transition-colors">
               Change
             </Link>
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Link href="/settings" className="flex items-center justify-center h-9 w-9 rounded-xl border border-slate-200 bg-white/80 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800">
+          <Link
+            href="/settings"
+            className="flex items-center justify-center h-9 w-9 rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all"
+          >
             <Settings size={16} />
           </Link>
-          <Link href="/debts" className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all">
+          <Link
+            href="/debts"
+            className="flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white border border-teal-700 hover:bg-teal-800 hover:border-teal-800 transition-colors"
+          >
             <Plus size={15} />
             Add Debt
           </Link>
@@ -72,22 +78,27 @@ export default async function DashboardPage() {
 
       {/* Onboarding */}
       {hasNoData && (
-        <div className="relative overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-6 dark:border-emerald-800/30 dark:from-emerald-950/40 dark:to-teal-950/20">
-          <div className="absolute right-0 top-0 h-32 w-32 translate-x-8 -translate-y-8 rounded-full bg-emerald-400/10 blur-2xl" />
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-950">
-              <AlertCircle size={18} className="text-emerald-600 dark:text-emerald-400" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-50">
+              <AlertCircle size={18} className="text-teal-700" />
             </div>
             <div>
-              <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">Let&apos;s build your debt-free plan</h3>
-              <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
+              <h3 className="font-semibold text-slate-900">Let&apos;s build your debt-free plan</h3>
+              <p className="mt-1 text-sm text-slate-500">
                 Add your debts and income to see your personalized payoff timeline.
               </p>
               <div className="mt-4 flex gap-3">
-                <Link href="/debts" className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/20">
+                <Link
+                  href="/debts"
+                  className="rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white border border-teal-700 hover:bg-teal-800 transition-colors"
+                >
                   Add First Debt
                 </Link>
-                <Link href="/income" className="rounded-xl border border-emerald-300 bg-white/80 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-white transition-colors dark:border-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                <Link
+                  href="/income"
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                >
                   Add Income
                 </Link>
               </div>
@@ -103,28 +114,21 @@ export default async function DashboardPage() {
           value={fmt(metrics.totalDebt)}
           sub={`${debts.length} active debt${debts.length !== 1 ? "s" : ""}`}
           icon={<TrendingDown size={18} />}
-          iconBg="bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400"
-          trend="negative"
+          accentColor="red"
         />
         <MetricCard
           label="Monthly Income"
           value={fmt(metrics.monthlyIncome)}
           sub="from all sources"
           icon={<DollarSign size={18} />}
-          iconBg="bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400"
-          trend="positive"
+          accentColor="teal"
         />
         <MetricCard
           label="Debt-to-Income"
           value={formatPercent(metrics.debtToIncomeRatio)}
           sub={dtiInfo.label}
           icon={<TrendingUp size={18} />}
-          iconBg={
-            metrics.debtToIncomeRatio < 36
-              ? "bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
-              : "bg-orange-100 text-orange-600 dark:bg-orange-950/60 dark:text-orange-400"
-          }
-          trend={metrics.debtToIncomeRatio < 36 ? "positive" : "negative"}
+          accentColor={metrics.debtToIncomeRatio < 36 ? "blue" : "orange"}
         />
         {payoffResult ? (
           <MetricCard
@@ -132,8 +136,7 @@ export default async function DashboardPage() {
             value={payoffResult.debtFreeDate.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
             sub={`${payoffResult.totalMonths} months away`}
             icon={<Calendar size={18} />}
-            iconBg="bg-violet-100 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400"
-            trend="positive"
+            accentColor="teal"
           />
         ) : (
           <MetricCard
@@ -141,8 +144,7 @@ export default async function DashboardPage() {
             value={fmt(metrics.availableForDebt)}
             sub="for extra payments"
             icon={<DollarSign size={18} />}
-            iconBg="bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400"
-            trend="positive"
+            accentColor="blue"
           />
         )}
       </div>
@@ -167,12 +169,12 @@ export default async function DashboardPage() {
                   { label: "Months Left", value: payoffResult.totalMonths.toString() },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400 dark:text-slate-500">{label}</span>
-                    <span className="font-semibold text-slate-900 dark:text-slate-100">{value}</span>
+                    <span className="text-slate-500">{label}</span>
+                    <span className="font-semibold text-slate-900">{value}</span>
                   </div>
                 ))}
-                <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-400 dark:text-slate-500">Rates via frankfurter.app</p>
+                <div className="pt-1 border-t border-slate-100">
+                  <p className="text-xs text-slate-400">Rates via frankfurter.app</p>
                 </div>
               </CardContent>
             </Card>
@@ -180,14 +182,14 @@ export default async function DashboardPage() {
             {/* AI Coach CTA */}
             <Link
               href="/coach"
-              className="group flex items-center gap-4 rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-4 hover:from-emerald-100 hover:to-teal-100/50 transition-all dark:border-emerald-800/30 dark:from-emerald-950/40 dark:to-teal-950/20 dark:hover:from-emerald-950/60"
+              className="group flex items-center gap-4 rounded-xl border border-teal-200 bg-teal-50 p-4 hover:bg-teal-100 transition-colors"
             >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-shadow">
-                <Bot size={20} className="text-white" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-700">
+                <Bot size={18} className="text-white" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-emerald-900 dark:text-emerald-100 text-sm">Ask Your AI Coach</p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Personalized debt advice →</p>
+                <p className="font-semibold text-teal-900 text-sm">Ask Your AI Coach</p>
+                <p className="text-xs text-teal-600 mt-0.5">Personalized debt advice</p>
               </div>
             </Link>
           </div>
@@ -202,33 +204,36 @@ export default async function DashboardPage() {
   );
 }
 
+const ACCENT_ICON_STYLES: Record<string, string> = {
+  teal: "bg-teal-50 text-teal-700",
+  red: "bg-red-50 text-red-600",
+  blue: "bg-blue-50 text-blue-600",
+  orange: "bg-orange-50 text-orange-600",
+};
+
 function MetricCard({
-  label, value, sub, icon, iconBg, trend,
+  label,
+  value,
+  sub,
+  icon,
+  accentColor,
 }: {
   label: string;
   value: string;
   sub: string;
   icon: React.ReactNode;
-  iconBg: string;
-  trend: "positive" | "negative" | "neutral";
+  accentColor: "teal" | "red" | "blue" | "orange";
 }) {
-  const valueColor =
-    trend === "positive"
-      ? "text-slate-900 dark:text-white"
-      : trend === "negative"
-      ? "text-slate-900 dark:text-white"
-      : "text-slate-900 dark:text-white";
-
   return (
     <Card className="overflow-hidden">
       <CardContent className="pt-5">
         <div className="flex items-start justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</p>
-            <p className={`mt-2 text-2xl font-bold tracking-tight ${valueColor}`}>{value}</p>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{sub}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p>
+            <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{value}</p>
+            <p className="mt-1 text-xs text-slate-400">{sub}</p>
           </div>
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${ACCENT_ICON_STYLES[accentColor]}`}>
             {icon}
           </div>
         </div>

@@ -5,22 +5,20 @@ import { cn } from "@/lib/utils";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 active:scale-[0.97]",
+  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 active:scale-[0.98]",
   {
     variants: {
       variant: {
         primary:
-          "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5",
+          "bg-teal-700 text-white border border-teal-700 hover:bg-teal-800 hover:border-teal-800",
         secondary:
-          "bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700",
+          "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50",
         destructive:
-          "bg-gradient-to-r from-red-600 to-red-500 text-white hover:from-red-500 hover:to-red-400 shadow-lg shadow-red-500/25",
+          "bg-red-600 text-white border border-red-600 hover:bg-red-700 hover:border-red-700",
         ghost:
-          "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+          "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
         outline:
-          "border border-slate-200 bg-white/80 text-slate-800 hover:bg-slate-50 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-800 backdrop-blur-sm",
-        glow:
-          "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5 pulse-glow",
+          "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50",
       },
       size: {
         sm: "px-3 py-1.5 text-sm h-8",
