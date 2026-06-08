@@ -1,0 +1,5 @@
+﻿.gstack
+.next
+node_modules
+prisma/dev.db
+*.db
