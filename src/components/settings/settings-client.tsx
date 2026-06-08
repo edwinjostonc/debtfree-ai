@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { updateSettings } from "@/app/actions/settings";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { CurrencySelect } from "@/components/ui/currency-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrencyInfo, SUPPORTED_CURRENCIES } from "@/lib/currency";

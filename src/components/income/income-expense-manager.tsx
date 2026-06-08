@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { CurrencySelect } from "@/components/ui/currency-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatMoney } from "@/lib/currency";
 import {
   Plus,
   Trash2,
@@ -390,7 +389,7 @@ export function IncomeExpenseManager({
   initialIncomes,
   initialExpenses,
   metrics,
-  baseCurrency,
+  baseCurrency: _baseCurrency,
 }: IncomeExpenseManagerProps) {
   const [activeTab, setActiveTab] = useState<"income" | "expenses">("income");
   const [showAddIncome, setShowAddIncome] = useState(false);

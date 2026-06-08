@@ -1,5 +1,5 @@
 import { calculatePayoff } from "./payoff";
-import type { Debt, SimulationParams, SimulationResult, PayoffResult } from "./types";
+import type { Debt, SimulationParams, SimulationResult } from "./types";
 
 /**
  * What-if simulator.

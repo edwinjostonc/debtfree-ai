@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computeMetrics } from "@/lib/financial/metrics";
-import { toMonthlyAmount } from "@/lib/financial/interest";
 import { generateCoaching } from "@/lib/financial/coach-engine";
 import { NextRequest } from "next/server";
 

@@ -147,7 +147,7 @@ function ComparisonCard({
 export function SimulatorClient({
   debts,
   monthlyBudget,
-  metrics,
+  metrics: _metrics,
 }: SimulatorClientProps) {
   const [strategy, setStrategy] = useState<Strategy>("AVALANCHE");
   const [inputs, setInputs] = useState<ScenarioInputs>({

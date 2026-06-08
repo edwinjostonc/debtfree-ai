@@ -3,8 +3,7 @@ import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import path from "path";
 
 declare global {
-  // eslint-disable-next-line no-var
-  var prisma: InstanceType<typeof PrismaClient> | undefined;
+  var prisma: InstanceType<typeof PrismaClient> | undefined;  
 }
 
 const DB_URL = path.join(process.cwd(), "prisma", "dev.db");

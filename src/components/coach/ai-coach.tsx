@@ -39,7 +39,7 @@ interface Turn {
   response: CoachResponse;
 }
 
-export function AiCoach({ hasData, userName }: AiCoachProps) {
+export function AiCoach({ hasData }: AiCoachProps) {
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [loading, setLoading] = useState(false);

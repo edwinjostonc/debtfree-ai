@@ -1,8 +1,7 @@
 import { calculatePayoff } from "./payoff";
 import { runSimulation } from "./simulator";
 import { computeMetrics, dtiRating, utilizationRating, formatCurrency } from "./metrics";
-import { toMonthlyAmount } from "./interest";
-import type { Debt, Strategy } from "./types";
+import type { Debt } from "./types";
 
 interface FinancialSnapshot {
   debts: Debt[];
@@ -51,7 +50,6 @@ export function generateCoaching(
   const insights: CoachInsight[] = [];
 
   // ── DTI Analysis ──────────────────────────────────────
-  const dti = dtiRating(metrics.debtToIncomeRatio);
   if (metrics.debtToIncomeRatio >= 43) {
     insights.push({
       type: "critical",
@@ -175,7 +173,7 @@ export function generateCoaching(
   // ── Build summary ──────────────────────────────────────
   const summary = buildSummary(snapshot, avalanche);
   const topRec = buildTopRecommendation(snapshot, insights, avalanche);
-  const payoffPlan = buildPayoffPlan(debts, avalanche, snowball, metrics);
+  const payoffPlan = buildPayoffPlan(debts, avalanche, snowball);
   const motivation = buildMotivation(debts, avalanche, metrics);
 
   // ── Handle specific questions ─────────────────────────
@@ -235,8 +233,7 @@ function buildTopRecommendation(
 function buildPayoffPlan(
   debts: Debt[],
   avalanche: ReturnType<typeof calculatePayoff> | null,
-  snowball: ReturnType<typeof calculatePayoff> | null,
-  metrics: ReturnType<typeof computeMetrics>
+  snowball: ReturnType<typeof calculatePayoff> | null
 ): string {
   if (!avalanche || debts.length === 0) return "Add your debts and income to generate your personalized payoff plan.";
 

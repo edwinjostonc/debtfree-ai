@@ -68,7 +68,7 @@ export function calculatePayoff(
 
     // Determine priority debt (first in ordered list still with balance)
     const priorityDebt = ordered.find((d) => balances[d.id] > 0.005);
-    let extraRemaining = extra;
+    const extraRemaining = extra;
 
     // Freed payment from paid-off debts rolls to priority
     let freedPayment = 0;
