@@ -14,7 +14,6 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.102.0",
     "@auth/prisma-adapter": "^2.11.2",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/client": "^7.8.0",
