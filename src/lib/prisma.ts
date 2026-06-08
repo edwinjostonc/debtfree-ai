@@ -1,15 +1,14 @@
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import path from "path";
+import { PrismaNeonHttp } from "@prisma/adapter-neon";
+import type { HTTPQueryOptions } from "@neondatabase/serverless";
 
 declare global {
-  var prisma: InstanceType<typeof PrismaClient> | undefined;  
+  var prisma: InstanceType<typeof PrismaClient> | undefined; // eslint-disable-line no-var
 }
 
-const DB_URL = path.join(process.cwd(), "prisma", "dev.db");
-
 function createPrisma() {
-  const adapter = new PrismaBetterSqlite3({ url: DB_URL });
+  const options = {} as HTTPQueryOptions<boolean, boolean>;
+  const adapter = new PrismaNeonHttp(process.env.DATABASE_URL!, options);
   return new PrismaClient({ adapter });
 }
 
